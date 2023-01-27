@@ -28,6 +28,10 @@ public class CommandeService {
         return commandeRepository.findPanierByIdEtab(idEtab);
     }
 
+    public void updateCommande(Commande commande) {
+        commandeRepository.save(commande);
+    }
+
     public Commande createPanier(long idEtab) {
   
         Optional<Etablissement> etablissementOpt = etablissementRepository.findById(idEtab);
