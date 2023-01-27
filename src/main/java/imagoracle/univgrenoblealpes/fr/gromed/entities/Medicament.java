@@ -1,6 +1,7 @@
 package imagoracle.univgrenoblealpes.fr.gromed.entities;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -136,6 +137,14 @@ public class Medicament {
 
     public List<ConditionDePrescription> getConditionsDePrescription() {
         return this.conditionsDePrescription;
+    }
+
+    public List<String> getStringFormattedConditionsPD() {
+        List<String> conditionsPD = new ArrayList<String>();
+        for (ConditionDePrescription condition : this.getConditionsDePrescription()) {
+            conditionsPD.add(condition.getConditionPD());
+        }
+        return conditionsPD;
     }
 
 }

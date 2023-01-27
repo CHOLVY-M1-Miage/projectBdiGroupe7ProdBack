@@ -47,6 +47,12 @@ public class Presentation {
     @Column(name = "DROITREMBOURSEMENT")
     private String droitRemboursement;
 
+    @Column(name = "STOCKPHYSIQUE")
+    private int stockPhysique;
+
+    @Column(name = "STOCKLOGIQUE")
+    private int stockLogique;
+
     @ManyToOne
     @JsonIgnore
     @JoinColumn(name = "codeCIS")
@@ -94,6 +100,27 @@ public class Presentation {
 
     public String getDroitRemboursement() {
         return this.droitRemboursement;
+    }
+    
+    // nous ne gérons le stock physique ni dans la 1ère, ni la 2ème itération.
+
+    // public int getStockPhysique() {
+    //     return this.stockPhysique;
+    // }
+
+    // public void setStockPhysique(int newStockPhysique) {
+    //     if (newStockPhysique > 0) {
+    //         this.stockPhysique = newStockPhysique;
+    //     }
+    //     // TODO nous ne gérons pas la cas d'un stockPhysique <= O pour l'instant.
+    // }
+
+    public int getStockLogique() {
+        return this.stockLogique;
+    }
+
+    public void setStockLogique(int newStockLogique) {
+        this.stockLogique = newStockLogique;
     }
 
     public Medicament getMedicament() {
