@@ -10,12 +10,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
+
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Commande;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.LigneCommande;
+import imagoracle.univgrenoblealpes.fr.gromed.entities.Utilisateur;
 import imagoracle.univgrenoblealpes.fr.gromed.services.CommandeService;
 import imagoracle.univgrenoblealpes.fr.gromed.services.LigneCommandeService;
 
@@ -25,23 +30,39 @@ public class CommandeController {
 
     @Autowired
     private CommandeService commandeService;
-    
+
     @Autowired
     private LigneCommandeService ligneCommandeService;
-    
+
     @GetMapping("/{idCommande}")
-    public Commande getCommande(@PathVariable(value = "idCommande") int id) {
+    public Commande getCommande(@PathVariable(value = "idCommande") int id,
+            @RequestHeader("Authorization") String jwt) {
+
         try {
 
+            FirebaseToken token = FirebaseAuth.getInstance().verifyIdToken(jwt);
             Optional<Commande> commande = commandeService.getCommande(id);
             if (commande.isPresent()) {
 
-                return commande.get();
+                List<Integer> utilisateursIds = new ArrayList<Integer>();
+                for (Utilisateur utilOfEtabOfCommande : commande.get().getUtilisateur().getEtablissement()
+                        .getUtilisateurs()) {
+
+                    utilisateursIds.add(utilOfEtabOfCommande.getId());
+                }
+                if (utilisateursIds.contains(Integer.parseInt(token.getUid()))) {
+
+                    return commande.get();
+                } else {
+
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+                }
 
             } else {
 
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande non trouvée");
             }
+
         } catch (Exception e) {
 
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentification non autorisée", e);
@@ -49,11 +70,35 @@ public class CommandeController {
     }
 
     @GetMapping("/{idCommande}/")
-    public List<LigneCommande> getLignesCommandeOfCommande(@PathVariable(value = "idCommande") int id) {
+    public List<LigneCommande> getLignesCommandeOfCommande(@PathVariable(value = "idCommande") int id,
+            @RequestHeader("Authorization") String jwt) {
+
         try {
 
-            List<LigneCommande> lignesCommande = ligneCommandeService.getLignesCommandeOfCommande(id);
-            return lignesCommande;
+            FirebaseToken token = FirebaseAuth.getInstance().verifyIdToken(jwt);
+            Optional<Commande> commande = commandeService.getCommande(id);
+            if (commande.isPresent()) {
+
+                List<Integer> utilisateursIds = new ArrayList<Integer>();
+                for (Utilisateur utilOfEtabOfCommande : commande.get().getUtilisateur().getEtablissement()
+                        .getUtilisateurs()) {
+
+                    utilisateursIds.add(utilOfEtabOfCommande.getId());
+                }
+                if (utilisateursIds.contains(Integer.parseInt(token.getUid()))) {
+
+                    List<LigneCommande> lignesCommande = ligneCommandeService.getLignesCommandeOfCommande(id);
+                    return lignesCommande;
+
+                } else {
+
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+                }
+
+            } else {
+
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande non trouvée");
+            }
 
         } catch (Exception e) {
 
@@ -62,43 +107,54 @@ public class CommandeController {
     }
 
     @PutMapping("/validation")
-    public ValiderPanierResponse validerPanier(@RequestBody Commande commande, /*default = false*/ boolean removeOutOfStock) {
+    public ValiderPanierResponse validerPanier(@RequestBody Commande commande,
+            /* default = false */ boolean removeOutOfStock,
+            @RequestHeader("Authorization") String jwt) {
+
         try {
 
-            boolean stockOk = true;
-            List<LigneCommande> lignesCommande = commande.getLignesCommande();
-            if (commande.getEstPanier() && lignesCommande.size() > 0) {
+            FirebaseToken token = FirebaseAuth.getInstance().verifyIdToken(jwt);
+            if (commande.getUtilisateur().getId() == Integer.parseInt(token.getUid())) {
 
-                List<LigneCommande> referencesOutOfStock = new ArrayList<LigneCommande>();
-                for (LigneCommande reference : lignesCommande) {
+                boolean stockOk = true;
+                List<LigneCommande> lignesCommande = commande.getLignesCommande();
+                if (commande.getEstPanier() && lignesCommande.size() > 0) {
 
-                    if (reference.getPresentation().getStockLogique() < reference.getQuantite()) {
+                    List<LigneCommande> referencesOutOfStock = new ArrayList<LigneCommande>();
+                    for (LigneCommande reference : lignesCommande) {
 
-                        referencesOutOfStock.add(reference);
+                        if (reference.getPresentation().getStockLogique() < reference.getQuantite()) {
+
+                            referencesOutOfStock.add(reference);
+                        }
+                    }
+                    // si stock insuffisant et pas de validation forcée du panier
+                    if (removeOutOfStock == false && referencesOutOfStock.size() > 0) {
+
+                        stockOk = false;
+                    } else {
+
+                        // transformer le panier en commande validée (càd estPanier = false) avec les
+                        // références EN STOCK
+                        commande.setEstPanier(false);
+                        // TODO reste à enlever du panier les réfences out of stock (laisser seulement
+                        // celles EN STOCK)
+                        commandeService.updateCommande(commande);
+
+                        // créer un nouveau panier pour l'étab. et y ajouter les références out of
+                        // stock.
+                        Commande newPanier = commandeService.createPanier(commande.getUtilisateur().getId());
+                        for (LigneCommande ligneCommande : referencesOutOfStock) {
+                            ligneCommande.setCommande(newPanier);
+                        }
                     }
                 }
-                // si stock insuffisant et pas de validation forcée du panier
-                if (removeOutOfStock == false && referencesOutOfStock.size() > 0) {
-                    
-                    stockOk = false;
-                }
-                else {
+                return new ValiderPanierResponse(commande, stockOk);
+            } else {
 
-                    // transformer le panier en commande validée (càd estPanier = false) avec les références EN STOCK
-                    commande.setEstPanier(false);
-                    // TODO reste à enlever du panier les réfences out of stock (laisser seulement celles EN STOCK)
-                    commandeService.updateCommande(commande);
-
-                    // créer un nouveau panier pour l'étab. et y ajouter les références out of stock.
-                    Commande newPanier = commandeService.createPanier(commande.getUtilisateur().getId());
-                    for (LigneCommande ligneCommande : referencesOutOfStock) {
-                        ligneCommande.setCommande(newPanier);
-                    }
-                }      
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
             }
-            return new ValiderPanierResponse(commande, stockOk);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
 
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized", e);
         }

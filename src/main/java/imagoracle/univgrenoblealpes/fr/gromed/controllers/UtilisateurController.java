@@ -16,7 +16,7 @@ import imagoracle.univgrenoblealpes.fr.gromed.services.UtilisateurService;
 @RestController
 @RequestMapping("/utilisateurs")
 public class UtilisateurController {
-    
+
     @Autowired
     private UtilisateurService utilisateurService;
 
@@ -27,7 +27,7 @@ public class UtilisateurController {
             if (utilisateur.isPresent()) {
                 return utilisateur.get();
             } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande non trouvée");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé");
             }
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentification non autorisée", e);

@@ -8,9 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
 
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Commande;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.LigneCommande;
@@ -21,62 +25,76 @@ import imagoracle.univgrenoblealpes.fr.gromed.services.LigneCommandeService;
 @RestController
 @RequestMapping("/lignesCommande")
 public class LigneCommandeController {
-    
+
     @Autowired
     private LigneCommandeService ligneCommandeService;
-    
+
     @Autowired
     private CommandeService commandeService;
 
     @PostMapping("/add")
-    public AddLigneCommandeResponse addLigneCommande(@RequestBody LigneCommande ligneCommande, 
-        /*default = false*/ boolean forceStock, /*default = false*/ boolean forcePD) {
-            
+    public AddLigneCommandeResponse addLigneCommande(@RequestBody LigneCommande ligneCommande,
+            /* default = false */ boolean forceStock, /* default = false */ boolean forcePD,
+            @RequestHeader("Authorization") String jwt) {
+
         try {
 
-            boolean stockOk = true;
-            List<String> pd = new ArrayList<String>();
-            Optional<LigneCommande> ligneCommandeOpt = ligneCommandeService.getLigneCommande(ligneCommande.getId());
-            if (ligneCommandeOpt.isPresent()) {
+            FirebaseToken token = FirebaseAuth.getInstance().verifyIdToken(jwt);
+            if (ligneCommande.getCommande().getUtilisateur().getId() == Integer.parseInt(token.getUid())) {
 
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "LigneCommande existe déjà dans le panier");
-            }
-            else {
+                boolean stockOk = true;
+                List<String> pd = new ArrayList<String>();
+                Optional<LigneCommande> ligneCommandeOpt = ligneCommandeService.getLigneCommande(ligneCommande.getId());
+                if (ligneCommandeOpt.isPresent()) {
 
-                Optional<Commande> panierOpt = commandeService.getPanierOfUtilisateur(ligneCommande.getCommande().getUtilisateur().getId());
-                if (!panierOpt.isPresent()) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "LigneCommande existe déjà dans le panier");
+                } else {
 
-                    // créer un nouveau panier pour l'étab. et y ajouter la commande.
-                    Commande panier = commandeService.createPanier(ligneCommande.getCommande().getUtilisateur().getId());
-                    // TODO le cas d'un "panier" = null n'est pas géré.
-                    ligneCommande.setCommande(panier);
-                }
+                    Optional<Commande> panierOpt = commandeService
+                            .getPanierOfUtilisateur(ligneCommande.getCommande().getUtilisateur().getId());
+                    if (!panierOpt.isPresent()) {
 
-                // si stock insuffisant et pas d'ajout forcé au panier
-                if(forceStock == false && ligneCommande.getPresentation().getStockLogique() < ligneCommande.getQuantite()) {
-                    
-                    stockOk = false;
-                }
-                else {
-
-                    // si les conditions de prescription ne sont pas bonnes et pas d'ajout forcé au panier
-                    if (forcePD == false && ligneCommande.getPresentation().getMedicament().getConditionsDePrescription().size() > 0) {
-
-                        pd = ligneCommande.getPresentation().getMedicament().getStringFormattedConditionsPD();
+                        // créer un nouveau panier pour l'étab. et y ajouter la commande.
+                        Commande panier = commandeService
+                                .createPanier(ligneCommande.getCommande().getUtilisateur().getId());
+                        // TODO le cas d'un "panier" = null n'est pas géré.
+                        ligneCommande.setCommande(panier);
                     }
-                    else {
 
-                        // ajouter la ligne de commande au panier de l'établissement (et màj du stock).
-                        ligneCommandeService.updateStockLogiqueOfPresentation(ligneCommande.getPresentation().getId(), ligneCommande.getQuantite());
-                        ligneCommandeService.saveLigneCommande(ligneCommande);
+                    // si stock insuffisant et pas d'ajout forcé au panier
+                    if (forceStock == false
+                            && ligneCommande.getPresentation().getStockLogique() < ligneCommande.getQuantite()) {
+
+                        stockOk = false;
+                    } else {
+
+                        // si les conditions de prescription ne sont pas bonnes et pas d'ajout forcé au
+                        // panier
+                        if (forcePD == false && ligneCommande.getPresentation().getMedicament()
+                                .getConditionsDePrescription().size() > 0) {
+
+                            pd = ligneCommande.getPresentation().getMedicament().getStringFormattedConditionsPD();
+                        } else {
+
+                            // ajouter la ligne de commande au panier de l'établissement (et màj du stock).
+                            ligneCommandeService.updateStockLogiqueOfPresentation(
+                                    ligneCommande.getPresentation().getId(), ligneCommande.getQuantite());
+                            ligneCommandeService.saveLigneCommande(ligneCommande);
+                        }
                     }
-                }
 
-                // AddLigneCommandeResponse renvoyé au front : dans le front on demande à l'utilisateur s'il veut forcer l'ajout de la réf au panier
-                // pour chacune des conditions : PD spécifiques (s'il ya des condPD dans le String[]) et Stock insuffisant (si stockOk est à true)
-                // si oui, on refait appel à cette méthode de mapping avec forceStock et/ou forcePD à true
-                // si non, tout s'arrête là.
-                return new AddLigneCommandeResponse(ligneCommande.getId(), stockOk, pd);
+                    // AddLigneCommandeResponse renvoyé au front : dans le front on demande à
+                    // l'utilisateur s'il veut forcer l'ajout de la réf au panier
+                    // pour chacune des conditions : PD spécifiques (s'il ya des condPD dans le
+                    // String[]) et Stock insuffisant (si stockOk est à true)
+                    // si oui, on refait appel à cette méthode de mapping avec forceStock et/ou
+                    // forcePD à true
+                    // si non, tout s'arrête là.
+                    return new AddLigneCommandeResponse(ligneCommande.getId(), stockOk, pd);
+                }
+            } else {
+
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
             }
         } catch (Exception e) {
 
