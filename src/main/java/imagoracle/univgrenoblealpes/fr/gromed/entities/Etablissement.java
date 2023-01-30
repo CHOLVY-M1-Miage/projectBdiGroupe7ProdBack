@@ -60,9 +60,6 @@ public class Etablissement {
     private long numeroSiret;
 
     @OneToMany
-    private List<Commande> commandes;
-
-    @OneToMany
     private List<Utilisateur> utilisateurs;
 
     public long getIdEtab() {
@@ -127,15 +124,6 @@ public class Etablissement {
 
     public long getNumeroSiret() {
         return numeroSiret;
-    }
-
-    public List<Commande> getCommandes() {
-        return this.commandes;
-    }
-
-    public void addCommande() {
-        Commande newCommande = new Commande();
-        this.commandes.add(newCommande);
     }
 
     public List<Utilisateur> getUtilisateurs() {

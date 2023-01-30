@@ -90,7 +90,7 @@ public class CommandeController {
                     commandeService.updateCommande(commande);
 
                     // créer un nouveau panier pour l'étab. et y ajouter les références out of stock.
-                    Commande newPanier = commandeService.createPanier(commande.getEtablissement().getIdEtab());
+                    Commande newPanier = commandeService.createPanier(commande.getUtilisateur().getId());
                     for (LigneCommande ligneCommande : referencesOutOfStock) {
                         ligneCommande.setCommande(newPanier);
                     }

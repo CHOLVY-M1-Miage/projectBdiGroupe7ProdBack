@@ -43,11 +43,11 @@ public class LigneCommandeController {
             }
             else {
 
-                Optional<Commande> panierOpt = commandeService.getPanierOfEtablissement(ligneCommande.getCommande().getEtablissement().getIdEtab());
+                Optional<Commande> panierOpt = commandeService.getPanierOfUtilisateur(ligneCommande.getCommande().getUtilisateur().getId());
                 if (!panierOpt.isPresent()) {
 
                     // créer un nouveau panier pour l'étab. et y ajouter la commande.
-                    Commande panier = commandeService.createPanier(ligneCommande.getCommande().getEtablissement().getIdEtab());
+                    Commande panier = commandeService.createPanier(ligneCommande.getCommande().getUtilisateur().getId());
                     // TODO le cas d'un "panier" = null n'est pas géré.
                     ligneCommande.setCommande(panier);
                 }

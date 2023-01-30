@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Commande;
-import imagoracle.univgrenoblealpes.fr.gromed.entities.Etablissement;
+import imagoracle.univgrenoblealpes.fr.gromed.entities.Utilisateur;
 import imagoracle.univgrenoblealpes.fr.gromed.repository.CommandeRepository;
-import imagoracle.univgrenoblealpes.fr.gromed.repository.EtablissementRepository;
+import imagoracle.univgrenoblealpes.fr.gromed.repository.UtilisateurRepository;
 
 @Service
 public class CommandeService {
@@ -18,27 +18,27 @@ public class CommandeService {
     private CommandeRepository commandeRepository;
 
     @Autowired
-    private EtablissementRepository etablissementRepository;
+    private UtilisateurRepository utilisateurRepository;
 
     public Optional<Commande> getCommande(int idCommande) {
         return commandeRepository.findById(idCommande);
     }
 
-    public Optional<Commande> getPanierOfEtablissement(long idEtab) {
-        return commandeRepository.findPanierByIdEtab(idEtab);
+    public Optional<Commande> getPanierOfUtilisateur(int idUtilisateur) {
+        return commandeRepository.findPanierByIdUtilisateur(idUtilisateur);
     }
 
     public void updateCommande(Commande commande) {
         commandeRepository.save(commande);
     }
 
-    public Commande createPanier(long idEtab) {
+    public Commande createPanier(int idUtilisateur) {
   
-        Optional<Etablissement> etablissementOpt = etablissementRepository.findById(idEtab);
-        if(etablissementOpt.isPresent()) {
+        Optional<Utilisateur> utilisateurOpt = utilisateurRepository.findById(idUtilisateur);
+        if(utilisateurOpt.isPresent()) {
             Commande panier = new Commande();        
             panier.setEstPanier(true);
-            panier.setEtablissement(etablissementOpt.get());
+            panier.setUtilisateur(utilisateurOpt.get());
 
             panier.setDateCommande(LocalDateTime.now());
             panier.setEstCommandeType(false);

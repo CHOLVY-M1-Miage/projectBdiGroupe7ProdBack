@@ -37,8 +37,8 @@ public class Commande {
     private List<LigneCommande> lignesCommande;
 
     @ManyToOne
-    @JoinColumn(name = "idEtab")
-    private Etablissement etablissement;
+    @JoinColumn(name = "IDUTILISATEUR")
+    private Utilisateur utilisateur;
 
     public Commande() {
         this.estPanier = true;
@@ -100,12 +100,12 @@ public class Commande {
         this.lignesCommande.add(newLigneCommande);
     }
 
-    public Etablissement getEtablissement() {
-        return this.etablissement;
+    public Utilisateur getUtilisateur() {
+        return this.utilisateur;
     }
 
-    public void setEtablissement(Etablissement newEtablissement) {
-        this.etablissement = newEtablissement;
+    public void setUtilisateur(Utilisateur newUtilisateur) {
+        this.utilisateur = newUtilisateur;
     }
 
 }
