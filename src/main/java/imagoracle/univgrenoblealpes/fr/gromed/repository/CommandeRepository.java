@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Commande;
 
 @Repository
-public interface CommandeRepository extends JpaRepository<Commande, Integer>{
+public interface CommandeRepository extends JpaRepository<Commande, String>{
     
     /* not used */
     @Query(value="select c from commande c where c.idetablissement = ?1 and estpanier = 1", nativeQuery = true)

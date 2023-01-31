@@ -31,7 +31,7 @@ public class CommandeController {
     private LigneCommandeService ligneCommandeService;
 
     @GetMapping("/{idCommande}")
-    public Commande getCommande(@PathVariable(value = "idCommande") int id) {
+    public Commande getCommande(@PathVariable(value = "idCommande") String id) {
 
         try {
 
@@ -58,7 +58,7 @@ public class CommandeController {
     }
 
     @GetMapping("/{idCommande}/")
-    public List<LigneCommande> getLignesCommandeOfCommande(@PathVariable(value = "idCommande") int id) {
+    public List<LigneCommande> getLignesCommandeOfCommande(@PathVariable(value = "idCommande") String id) {
 
         try {
 

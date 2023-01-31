@@ -13,6 +13,6 @@ import imagoracle.univgrenoblealpes.fr.gromed.keys.LigneCommandeKey;
 public interface LigneCommandeRepository extends JpaRepository<LigneCommande, LigneCommandeKey>{
     
     @Query(value = "SELECT l from Ligne_Commande l where l.id_commande = ?1", nativeQuery=true)
-    List<LigneCommande> findByIdCommande(int idCommande);
+    List<LigneCommande> findByIdCommande(String idCommande);
 
 }

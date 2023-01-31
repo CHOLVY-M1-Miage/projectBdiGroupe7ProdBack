@@ -20,7 +20,7 @@ public class CommandeService {
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
-    public Optional<Commande> getCommande(int idCommande) {
+    public Optional<Commande> getCommande(String idCommande) {
         return commandeRepository.findById(idCommande);
     }
 

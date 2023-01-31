@@ -23,7 +23,7 @@ public class LigneCommandeService {
     @Autowired
     private PresentationRepository presentationRepository;
 
-    public List<LigneCommande> getLignesCommandeOfCommande(int idCommande) {
+    public List<LigneCommande> getLignesCommandeOfCommande(String idCommande) {
         return ligneCommandeRepository.findByIdCommande(idCommande);
     }
 
