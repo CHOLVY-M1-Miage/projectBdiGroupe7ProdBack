@@ -1,5 +1,7 @@
 package imagoracle.univgrenoblealpes.fr.gromed.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import imagoracle.univgrenoblealpes.fr.gromed.keys.LigneCommandeKey;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -22,12 +24,18 @@ public class LigneCommande {
     @ManyToOne
     @MapsId("idPresentation")
     @JoinColumn(name = "idpresentation")
+    @JsonIgnore
     private Presentation presentation;
 
     @ManyToOne
     @MapsId("idCommande")
     @JoinColumn(name = "idcommande")
+    @JsonIgnore
     private Commande commande;
+
+    public LigneCommande() {
+        
+    }
 
     public LigneCommande(LigneCommandeKey id) {
         this.id = id;

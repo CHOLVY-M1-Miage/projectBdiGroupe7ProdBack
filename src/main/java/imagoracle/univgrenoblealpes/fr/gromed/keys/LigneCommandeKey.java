@@ -12,7 +12,7 @@ public class LigneCommandeKey implements Serializable {
     private int idPresentation;
 
     @Column(name = "")
-    private int idCommande;
+    private String idCommande;
 
     public int getIdPresentation() {
         return this.idPresentation;
@@ -22,11 +22,11 @@ public class LigneCommandeKey implements Serializable {
         this.idPresentation = newIdPresentation;
     }
 
-    public int getIdCommande() {
+    public String getIdCommande() {
         return this.idCommande;
     }
 
-    public void setIdCommande(int newIdCommande) {
+    public void setIdCommande(String newIdCommande) {
         this.idCommande = newIdCommande;
     }
 

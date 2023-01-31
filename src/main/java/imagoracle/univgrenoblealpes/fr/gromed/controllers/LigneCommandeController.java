@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,9 +15,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Commande;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.LigneCommande;
+import imagoracle.univgrenoblealpes.fr.gromed.entities.Presentation;
 import imagoracle.univgrenoblealpes.fr.gromed.keys.LigneCommandeKey;
 import imagoracle.univgrenoblealpes.fr.gromed.services.CommandeService;
 import imagoracle.univgrenoblealpes.fr.gromed.services.LigneCommandeService;
+import imagoracle.univgrenoblealpes.fr.gromed.services.PresentationService;
 
 @RestController
 @RequestMapping("/lignesCommande")
@@ -27,6 +30,11 @@ public class LigneCommandeController {
 
     @Autowired
     private CommandeService commandeService;
+
+    @Autowired
+    private PresentationService presentationService;
+
+    @GetMapping
 
     @PostMapping("/add")
     public AddLigneCommandeResponse addLigneCommande(@RequestBody LigneCommande ligneCommande,
@@ -42,37 +50,44 @@ public class LigneCommandeController {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "LigneCommande existe déjà dans le panier");
                 } else {
 
-                    Optional<Commande> panierOpt = commandeService
-                            .getPanierOfUtilisateur(ligneCommande.getCommande().getUtilisateur().getId());
-                    if (!panierOpt.isPresent()) {
+                    Optional<Presentation> presentationOpt = presentationService.getPresentation(ligneCommande.getId().getIdPresentation());
+                    Optional<Commande> commandeOpt = commandeService.getCommande(ligneCommande.getId().getIdCommande());
+                    if (presentationOpt.isPresent() && commandeOpt.isPresent()) {
 
-                        // créer un nouveau panier pour l'étab. et y ajouter la commande.
-                        Commande panier = commandeService
-                                .createPanier(ligneCommande.getCommande().getUtilisateur().getId());
-                        // TODO le cas d'un "panier" = null n'est pas géré.
-                        ligneCommande.setCommande(panier);
-                    }
+                        Optional<Commande> panierOpt = commandeService
+                                .getPanierOfUtilisateur(commandeOpt.get().getUtilisateur().getId());
+                        if (!panierOpt.isPresent()) {
 
-                    // si stock insuffisant et pas d'ajout forcé au panier
-                    if (forceStock == false
-                            && ligneCommande.getPresentation().getStockLogique() < ligneCommande.getQuantite()) {
+                            // créer un nouveau panier pour l'étab. et y ajouter la commande.
+                            Commande panier = commandeService
+                                    .createPanier(commandeOpt.get().getUtilisateur().getId());
+                            // TODO le cas d'un "panier" = null n'est pas géré.
+                            commandeService.updateCommande(panier);
+                        }
 
-                        stockOk = false;
-                    } else {
+                        // si stock insuffisant et pas d'ajout forcé au panier
+                        if (forceStock == false
+                                && presentationOpt.get().getStockLogique() < ligneCommande.getQuantite()) {
 
-                        // si les conditions de prescription ne sont pas bonnes et pas d'ajout forcé au
-                        // panier
-                        if (forcePD == false && ligneCommande.getPresentation().getMedicament()
-                                .getConditionsDePrescription().size() > 0) {
-
-                            pd = ligneCommande.getPresentation().getMedicament().getStringFormattedConditionsPD();
+                            stockOk = false;
                         } else {
 
-                            // ajouter la ligne de commande au panier de l'établissement (et màj du stock).
-                            ligneCommandeService.updateStockLogiqueOfPresentation(
-                                    ligneCommande.getPresentation().getId(), ligneCommande.getQuantite());
-                            ligneCommandeService.saveLigneCommande(ligneCommande);
+                            // si les conditions de prescription ne sont pas bonnes et pas d'ajout forcé au
+                            // panier
+                        
+                            if (forcePD == false && presentationOpt.get().getMedicament()
+                                .getConditionsDePrescription().size() > 0) {
+
+                            pd = presentationOpt.get().getMedicament().getStringFormattedConditionsPD();
+                            } else {
+
+                                // ajouter la ligne de commande au panier de l'établissement (et màj du stock).
+                                ligneCommandeService.updateStockLogiqueOfPresentation(
+                                        ligneCommande.getId().getIdPresentation(), ligneCommande.getQuantite());
+                                ligneCommandeService.saveLigneCommande(ligneCommande);
+                            }
                         }
+                        
                     }
 
                     // AddLigneCommandeResponse renvoyé au front : dans le front on demande à

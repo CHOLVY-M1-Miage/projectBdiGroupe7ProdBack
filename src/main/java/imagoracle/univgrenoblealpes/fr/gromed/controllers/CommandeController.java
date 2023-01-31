@@ -16,9 +16,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Commande;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.LigneCommande;
+import imagoracle.univgrenoblealpes.fr.gromed.entities.Presentation;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Utilisateur;
 import imagoracle.univgrenoblealpes.fr.gromed.services.CommandeService;
-import imagoracle.univgrenoblealpes.fr.gromed.services.LigneCommandeService;
+// import imagoracle.univgrenoblealpes.fr.gromed.services.LigneCommandeService;
+import imagoracle.univgrenoblealpes.fr.gromed.services.PresentationService;
 
 @RestController
 @RequestMapping("/commandes")
@@ -27,8 +29,11 @@ public class CommandeController {
     @Autowired
     private CommandeService commandeService;
 
+    // @Autowired
+    // private LigneCommandeService ligneCommandeService;
+
     @Autowired
-    private LigneCommandeService ligneCommandeService;
+    private PresentationService presentationService;
 
     @GetMapping("/{idCommande}")
     public Commande getCommande(@PathVariable(value = "idCommande") String id) {
@@ -57,34 +62,34 @@ public class CommandeController {
         }
     }
 
-    @GetMapping("/{idCommande}/")
-    public List<LigneCommande> getLignesCommandeOfCommande(@PathVariable(value = "idCommande") String id) {
+    // @GetMapping("/{idCommande}/")
+    // public List<LigneCommande> getLignesCommandeOfCommande(@PathVariable(value = "idCommande") String id) {
 
-        try {
+    //     try {
 
-            Optional<Commande> commande = commandeService.getCommande(id);
-            if (commande.isPresent()) {
+    //         Optional<Commande> commande = commandeService.getCommande(id);
+    //         if (commande.isPresent()) {
 
-                List<String> utilisateursIds = new ArrayList<String>();
-                for (Utilisateur utilOfEtabOfCommande : commande.get().getUtilisateur().getEtablissement()
-                        .getUtilisateurs()) {
+    //             List<String> utilisateursIds = new ArrayList<String>();
+    //             for (Utilisateur utilOfEtabOfCommande : commande.get().getUtilisateur().getEtablissement()
+    //                     .getUtilisateurs()) {
 
-                    utilisateursIds.add(utilOfEtabOfCommande.getId());
-                }
+    //                 utilisateursIds.add(utilOfEtabOfCommande.getId());
+    //             }
 
-                    List<LigneCommande> lignesCommande = ligneCommandeService.getLignesCommandeOfCommande(id);
-                    return lignesCommande;
+    //                 List<LigneCommande> lignesCommande = ligneCommandeService.getLignesCommandeOfCommande(id);
+    //                 return lignesCommande;
 
-            } else {
+    //         } else {
 
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande non trouvée");
-            }
+    //             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande non trouvée");
+    //         }
 
-        } catch (Exception e) {
+    //     } catch (Exception e) {
 
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentification non autorisée", e);
-        }
-    }
+    //         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentification non autorisée", e);
+    //     }
+    // }
 
     @PutMapping("/validation")
     public ValiderPanierResponse validerPanier(@RequestBody Commande commande,
@@ -99,9 +104,12 @@ public class CommandeController {
                     List<LigneCommande> referencesOutOfStock = new ArrayList<LigneCommande>();
                     for (LigneCommande reference : lignesCommande) {
 
-                        if (reference.getPresentation().getStockLogique() < reference.getQuantite()) {
+                        Optional<Presentation> presentationOpt = presentationService.getPresentation(reference.getId().getIdPresentation());
+                        if(presentationOpt.isPresent()) {
+                            if (presentationOpt.get().getStockLogique() < reference.getQuantite()) {
 
-                            referencesOutOfStock.add(reference);
+                                referencesOutOfStock.add(reference);
+                            }
                         }
                     }
                     // si stock insuffisant et pas de validation forcée du panier
@@ -121,7 +129,11 @@ public class CommandeController {
                         // stock.
                         Commande newPanier = commandeService.createPanier(commande.getUtilisateur().getId());
                         for (LigneCommande ligneCommande : referencesOutOfStock) {
-                            ligneCommande.setCommande(newPanier);
+                            
+                            Optional<Commande> commandeOpt = commandeService.getCommande(ligneCommande.getId().getIdCommande());
+                            if (commandeOpt.isPresent()) {
+                                commandeService.updateCommande(newPanier);
+                            }
                         }
                     }
                 }

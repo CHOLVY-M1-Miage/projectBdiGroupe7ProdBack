@@ -2,6 +2,8 @@ package imagoracle.univgrenoblealpes.fr.gromed.entities;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -61,7 +63,8 @@ public class Etablissement {
     @Column(name = "NUMEROSIRET")
     private String numeroSiret;
 
-    @OneToMany(mappedBy = "id")
+    @OneToMany(mappedBy = "etablissement")
+    @JsonIgnore
     private List<Utilisateur> utilisateurs;
 
     public String getIdEtab() {
