@@ -19,7 +19,7 @@ public class UtilisateurService {
         return utilisateurRepository.findAll();
     }
 
-    public Optional<Utilisateur> getUtilisateur(int idUtilisateur) {
+    public Optional<Utilisateur> getUtilisateur(String idUtilisateur) {
         return utilisateurRepository.findById(idUtilisateur);
     }
     

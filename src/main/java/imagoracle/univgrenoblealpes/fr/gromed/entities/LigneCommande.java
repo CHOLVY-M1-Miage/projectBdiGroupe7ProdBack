@@ -7,8 +7,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "LIGNECOMMANDE")
 public class LigneCommande {
 
     @EmbeddedId
@@ -19,12 +21,12 @@ public class LigneCommande {
 
     @ManyToOne
     @MapsId("idPresentation")
-    @JoinColumn(name = "id_presentation")
+    @JoinColumn(name = "idpresentation")
     private Presentation presentation;
 
     @ManyToOne
     @MapsId("idCommande")
-    @JoinColumn(name = "id_commande")
+    @JoinColumn(name = "idcommande")
     private Commande commande;
 
     public LigneCommande(LigneCommandeKey id) {

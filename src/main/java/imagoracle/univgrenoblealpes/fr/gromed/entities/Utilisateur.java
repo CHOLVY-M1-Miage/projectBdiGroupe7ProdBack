@@ -8,28 +8,30 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "UTILISATEUR")
 public class Utilisateur {
     @Id
     @Column(name = "ID")
-    private int id;
+    private String id;
 
     @Column(name = "NOM")
     private String nom;
 
     @ManyToOne
-    @JoinColumn(name = "idEtab")
+    @JoinColumn(name = "IDETAB")
     private Etablissement etablissement;
 
-    @OneToMany
+    @OneToMany(mappedBy = "id")
     private List<Commande> commandes;
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

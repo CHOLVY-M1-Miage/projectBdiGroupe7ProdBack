@@ -9,8 +9,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "AVISSMR")
 public class AvisSMR {
 
     @EmbeddedId

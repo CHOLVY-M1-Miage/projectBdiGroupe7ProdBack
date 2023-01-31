@@ -38,7 +38,7 @@ public class CommandeController {
             Optional<Commande> commande = commandeService.getCommande(id);
             if (commande.isPresent()) {
 
-                List<Integer> utilisateursIds = new ArrayList<Integer>();
+                List<String> utilisateursIds = new ArrayList<String>();
                 for (Utilisateur utilOfEtabOfCommande : commande.get().getUtilisateur().getEtablissement()
                         .getUtilisateurs()) {
 
@@ -65,7 +65,7 @@ public class CommandeController {
             Optional<Commande> commande = commandeService.getCommande(id);
             if (commande.isPresent()) {
 
-                List<Integer> utilisateursIds = new ArrayList<Integer>();
+                List<String> utilisateursIds = new ArrayList<String>();
                 for (Utilisateur utilOfEtabOfCommande : commande.get().getUtilisateur().getEtablissement()
                         .getUtilisateurs()) {
 

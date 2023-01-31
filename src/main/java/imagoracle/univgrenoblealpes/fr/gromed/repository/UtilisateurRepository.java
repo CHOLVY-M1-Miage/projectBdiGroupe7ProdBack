@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Utilisateur;
 
 @Repository
-public interface UtilisateurRepository extends JpaRepository<Utilisateur, Integer>{
+public interface UtilisateurRepository extends JpaRepository<Utilisateur, String>{
     
 }

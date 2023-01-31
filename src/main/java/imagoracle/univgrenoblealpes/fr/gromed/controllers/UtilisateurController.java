@@ -21,16 +21,16 @@ public class UtilisateurController {
     private UtilisateurService utilisateurService;
 
     @GetMapping("/{idUtilisateur}")
-    public Utilisateur getUtilisateur(@PathVariable(value = "idUtilisateur") int id) {
-        try {
+    public Utilisateur getUtilisateur(@PathVariable(value = "idUtilisateur") String id) {
+        //try {
             Optional<Utilisateur> utilisateur = utilisateurService.getUtilisateur(id);
             if (utilisateur.isPresent()) {
                 return utilisateur.get();
             } else {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé");
             }
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentification non autorisée", e);
-        }
+        // } catch (Exception e) {
+        //     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentification non autorisée", e);
+        // }
     }
 }

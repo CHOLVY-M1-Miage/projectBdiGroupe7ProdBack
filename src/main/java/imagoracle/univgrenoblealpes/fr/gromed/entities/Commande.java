@@ -3,6 +3,8 @@ package imagoracle.univgrenoblealpes.fr.gromed.entities;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import imagoracle.univgrenoblealpes.fr.gromed.keys.LigneCommandeKey;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,15 +12,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "COMMANDE")
 public class Commande {
 
     @Id
     @Column(name = "ID")
-    private int id;
+    private String id;
 
-    @Column(name = "DATEDECOMMANDE")
+    @Column(name = "DATECOMMANDE")
     private LocalDateTime dateCommande;
 
     @Column(name = "ESTPANIER")
@@ -37,6 +41,7 @@ public class Commande {
     private List<LigneCommande> lignesCommande;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "IDUTILISATEUR")
     private Utilisateur utilisateur;
 
@@ -47,7 +52,7 @@ public class Commande {
         this.estCommandeType = false;
     }
 
-    public int getId() {
+    public String getId() {
         return this.id;
     }
 

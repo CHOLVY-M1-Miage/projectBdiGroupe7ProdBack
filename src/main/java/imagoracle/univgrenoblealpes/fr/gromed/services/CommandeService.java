@@ -24,7 +24,7 @@ public class CommandeService {
         return commandeRepository.findById(idCommande);
     }
 
-    public Optional<Commande> getPanierOfUtilisateur(int idUtilisateur) {
+    public Optional<Commande> getPanierOfUtilisateur(String idUtilisateur) {
         return commandeRepository.findPanierByIdUtilisateur(idUtilisateur);
     }
 
@@ -32,7 +32,7 @@ public class CommandeService {
         commandeRepository.save(commande);
     }
 
-    public Commande createPanier(int idUtilisateur) {
+    public Commande createPanier(String idUtilisateur) {
   
         Optional<Utilisateur> utilisateurOpt = utilisateurRepository.findById(idUtilisateur);
         if(utilisateurOpt.isPresent()) {

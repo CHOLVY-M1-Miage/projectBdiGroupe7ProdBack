@@ -6,13 +6,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "ETABLISSEMENT")
 public class Etablissement {
 
     @Id
     @Column(name = "NUMEROFINESSEET")
-    private long idEtab;
+    private String idEtab;
 
     @Column(name = "RAISONSOCIALE")
     private String raisonSociale;
@@ -57,12 +59,12 @@ public class Etablissement {
     private String libelleCategAgregEtab;
 
     @Column(name = "NUMEROSIRET")
-    private long numeroSiret;
+    private String numeroSiret;
 
-    @OneToMany
+    @OneToMany(mappedBy = "id")
     private List<Utilisateur> utilisateurs;
 
-    public long getIdEtab() {
+    public String getIdEtab() {
         return this.idEtab;
     }
 
@@ -122,7 +124,7 @@ public class Etablissement {
         return libelleCategAgregEtab;
     }
 
-    public long getNumeroSiret() {
+    public String getNumeroSiret() {
         return numeroSiret;
     }
 
