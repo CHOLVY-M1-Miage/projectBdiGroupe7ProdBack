@@ -10,13 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseToken;
 
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Commande;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.LigneCommande;
@@ -35,12 +31,10 @@ public class CommandeController {
     private LigneCommandeService ligneCommandeService;
 
     @GetMapping("/{idCommande}")
-    public Commande getCommande(@PathVariable(value = "idCommande") int id,
-            @RequestHeader("Authorization") String jwt) {
+    public Commande getCommande(@PathVariable(value = "idCommande") int id) {
 
         try {
 
-            FirebaseToken token = FirebaseAuth.getInstance().verifyIdToken(jwt);
             Optional<Commande> commande = commandeService.getCommande(id);
             if (commande.isPresent()) {
 
@@ -50,14 +44,8 @@ public class CommandeController {
 
                     utilisateursIds.add(utilOfEtabOfCommande.getId());
                 }
-                if (utilisateursIds.contains(Integer.parseInt(token.getUid()))) {
 
                     return commande.get();
-                } else {
-
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-                }
-
             } else {
 
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande non trouvée");
@@ -70,12 +58,10 @@ public class CommandeController {
     }
 
     @GetMapping("/{idCommande}/")
-    public List<LigneCommande> getLignesCommandeOfCommande(@PathVariable(value = "idCommande") int id,
-            @RequestHeader("Authorization") String jwt) {
+    public List<LigneCommande> getLignesCommandeOfCommande(@PathVariable(value = "idCommande") int id) {
 
         try {
 
-            FirebaseToken token = FirebaseAuth.getInstance().verifyIdToken(jwt);
             Optional<Commande> commande = commandeService.getCommande(id);
             if (commande.isPresent()) {
 
@@ -85,15 +71,9 @@ public class CommandeController {
 
                     utilisateursIds.add(utilOfEtabOfCommande.getId());
                 }
-                if (utilisateursIds.contains(Integer.parseInt(token.getUid()))) {
 
                     List<LigneCommande> lignesCommande = ligneCommandeService.getLignesCommandeOfCommande(id);
                     return lignesCommande;
-
-                } else {
-
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-                }
 
             } else {
 
@@ -108,13 +88,9 @@ public class CommandeController {
 
     @PutMapping("/validation")
     public ValiderPanierResponse validerPanier(@RequestBody Commande commande,
-            /* default = false */ boolean removeOutOfStock,
-            @RequestHeader("Authorization") String jwt) {
+            /* default = false */ boolean removeOutOfStock) {
 
         try {
-
-            FirebaseToken token = FirebaseAuth.getInstance().verifyIdToken(jwt);
-            if (commande.getUtilisateur().getId() == Integer.parseInt(token.getUid())) {
 
                 boolean stockOk = true;
                 List<LigneCommande> lignesCommande = commande.getLignesCommande();
@@ -150,10 +126,6 @@ public class CommandeController {
                     }
                 }
                 return new ValiderPanierResponse(commande, stockOk);
-            } else {
-
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-            }
         } catch (Exception e) {
 
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized", e);

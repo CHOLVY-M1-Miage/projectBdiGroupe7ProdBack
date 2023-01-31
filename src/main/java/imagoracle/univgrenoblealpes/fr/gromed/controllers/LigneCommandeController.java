@@ -8,13 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseToken;
 
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Commande;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.LigneCommande;
@@ -34,13 +30,9 @@ public class LigneCommandeController {
 
     @PostMapping("/add")
     public AddLigneCommandeResponse addLigneCommande(@RequestBody LigneCommande ligneCommande,
-            /* default = false */ boolean forceStock, /* default = false */ boolean forcePD,
-            @RequestHeader("Authorization") String jwt) {
+            /* default = false */ boolean forceStock, /* default = false */ boolean forcePD) {
 
         try {
-
-            FirebaseToken token = FirebaseAuth.getInstance().verifyIdToken(jwt);
-            if (ligneCommande.getCommande().getUtilisateur().getId() == Integer.parseInt(token.getUid())) {
 
                 boolean stockOk = true;
                 List<String> pd = new ArrayList<String>();
@@ -92,10 +84,6 @@ public class LigneCommandeController {
                     // si non, tout s'arrête là.
                     return new AddLigneCommandeResponse(ligneCommande.getId(), stockOk, pd);
                 }
-            } else {
-
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-            }
         } catch (Exception e) {
 
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized", e);
