@@ -1,5 +1,6 @@
 package imagoracle.univgrenoblealpes.fr.gromed.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -47,6 +49,23 @@ public class PresentationController {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentification non autorisée", e);
         }
+    }
+
+    @GetMapping("/article")
+    public List<Presentation> search(
+        @RequestParam("medicament") Optional<String> medicament,
+        @RequestParam("molecule") Optional<String> molecule,
+        @RequestParam("fournisseur") Optional<String> fournisseur,
+        @RequestParam("estGenerique") Optional<Boolean> estGenerique,
+        @RequestParam("estCollectivite") Optional<Boolean> estCollectivite
+        ){
+        List<Presentation> lesPrez = presentationService.search(
+            medicament.isPresent()?medicament.get():null, 
+            molecule.isPresent()?molecule.get():null,
+            fournisseur.isPresent()?fournisseur.get():null,
+            estGenerique.isPresent()?estGenerique.get():null,
+            estCollectivite.isPresent()?estCollectivite.get():null);
+        return lesPrez;
     }
 
 }

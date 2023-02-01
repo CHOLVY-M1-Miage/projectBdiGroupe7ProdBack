@@ -22,4 +22,43 @@ public class PresentationService {
     public List<Presentation> getPresentationsByMedicamentCodeCIS(int medicamentCodeCIS) {
         return presentationRepository.findByMedicamentCodeCIS(medicamentCodeCIS);
     }
+
+    public List<Presentation> search(String medicament, String molecule, String fournisseur, Boolean estGenerique,
+            Boolean estCollectivite) {
+            
+            medicament = medicament == null ? "" : medicament;
+            molecule = molecule == null ? "" : molecule;
+            fournisseur = fournisseur == null ? "" : fournisseur;
+
+            List<Presentation> retour;
+                if(estGenerique != null){
+                    if(estCollectivite != null){
+                        retour = presentationRepository.searchWithBoth(
+                            medicament, molecule, fournisseur, 
+                            estGenerique.booleanValue() ? 1 : 0, 
+                            estCollectivite.booleanValue() ? 1 : 0
+                            );
+                    }
+                    else{
+                        retour = presentationRepository.searchWithGenerique(
+                            medicament, molecule, fournisseur, 
+                            estGenerique.booleanValue() ? 1 : 0
+                            );
+                    }
+                }
+                else{
+                    if(estCollectivite != null){
+                        retour = presentationRepository.searchWithCollectivite(
+                            medicament, molecule, fournisseur, 
+                            estCollectivite.booleanValue() ? 1 : 0
+                            );
+                    }
+                    else{
+                        retour = presentationRepository.search(medicament, molecule, fournisseur);
+                    }
+                }
+        
+        
+        return retour;
+    }
 }
