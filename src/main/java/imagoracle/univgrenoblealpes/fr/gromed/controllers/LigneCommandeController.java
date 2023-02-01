@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,24 +33,21 @@ public class LigneCommandeController {
     @Autowired
     private PresentationService presentationService;
 
-    @GetMapping
-
     @PostMapping("/add")
-    public AddLigneCommandeResponse addLigneCommande(@RequestBody LigneCommande ligneCommande,
-            /* default = false */ boolean forceStock, /* default = false */ boolean forcePD) {
+    public AddLigneCommandeResponse addLigneCommande(@RequestBody AddLigneCommandeRequestObject requestObject) {
 
         try {
 
                 boolean stockOk = true;
                 List<String> pd = new ArrayList<String>();
-                Optional<LigneCommande> ligneCommandeOpt = ligneCommandeService.getLigneCommande(ligneCommande.getId());
+                Optional<LigneCommande> ligneCommandeOpt = ligneCommandeService.getLigneCommande(requestObject.getLigneCommande().getId());
                 if (ligneCommandeOpt.isPresent()) {
 
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "LigneCommande existe déjà dans le panier");
                 } else {
 
-                    Optional<Presentation> presentationOpt = presentationService.getPresentation(ligneCommande.getId().getIdPresentation());
-                    Optional<Commande> commandeOpt = commandeService.getCommande(ligneCommande.getId().getIdCommande());
+                    Optional<Presentation> presentationOpt = presentationService.getPresentation(requestObject.getLigneCommande().getId().getIdPresentation());
+                    Optional<Commande> commandeOpt = commandeService.getCommande(requestObject.getLigneCommande().getId().getIdCommande());
                     if (presentationOpt.isPresent() && commandeOpt.isPresent()) {
 
                         Optional<Commande> panierOpt = commandeService
@@ -66,8 +62,8 @@ public class LigneCommandeController {
                         }
 
                         // si stock insuffisant et pas d'ajout forcé au panier
-                        if (forceStock == false
-                                && presentationOpt.get().getStockLogique() < ligneCommande.getQuantite()) {
+                        if (requestObject.isForceStock() == false
+                                && presentationOpt.get().getStockLogique() < requestObject.getLigneCommande().getQuantite()) {
 
                             stockOk = false;
                         } else {
@@ -75,7 +71,7 @@ public class LigneCommandeController {
                             // si les conditions de prescription ne sont pas bonnes et pas d'ajout forcé au
                             // panier
                         
-                            if (forcePD == false && presentationOpt.get().getMedicament()
+                            if (requestObject.isForcePD() == false && presentationOpt.get().getMedicament()
                                 .getConditionsDePrescription().size() > 0) {
 
                             pd = presentationOpt.get().getMedicament().getStringFormattedConditionsPD();
@@ -83,8 +79,8 @@ public class LigneCommandeController {
 
                                 // ajouter la ligne de commande au panier de l'établissement (et màj du stock).
                                 ligneCommandeService.updateStockLogiqueOfPresentation(
-                                        ligneCommande.getId().getIdPresentation(), ligneCommande.getQuantite());
-                                ligneCommandeService.saveLigneCommande(ligneCommande);
+                                        requestObject.getLigneCommande().getId().getIdPresentation(), requestObject.getLigneCommande().getQuantite());
+                                ligneCommandeService.saveLigneCommande(requestObject.getLigneCommande());
                             }
                         }
                         
@@ -97,7 +93,7 @@ public class LigneCommandeController {
                     // si oui, on refait appel à cette méthode de mapping avec forceStock et/ou
                     // forcePD à true
                     // si non, tout s'arrête là.
-                    return new AddLigneCommandeResponse(ligneCommande.getId(), stockOk, pd);
+                    return new AddLigneCommandeResponse(requestObject.getLigneCommande().getId(), stockOk, pd);
                 }
         } catch (Exception e) {
 
@@ -115,6 +111,47 @@ public class LigneCommandeController {
             this.idLigneCommande = idLigneCommande;
             this.stockOk = stockOk;
             this.conditionsPD = conditionsPD;
+        }
+    }
+
+    public class AddLigneCommandeRequestObject {
+
+        LigneCommande ligneCommande;
+        boolean forceStock;
+        boolean forcePD;
+
+        public AddLigneCommandeRequestObject() {
+
+        }
+
+        public AddLigneCommandeRequestObject(LigneCommande ligneCommande, boolean forceStock, boolean forcePD) {
+            this.ligneCommande = ligneCommande;
+            this.forceStock = forceStock;
+            this.forcePD = forcePD;
+        }
+
+        public LigneCommande getLigneCommande() {
+            return ligneCommande;
+        }
+
+        public void setLigneCommande(LigneCommande ligneCommande) {
+            this.ligneCommande = ligneCommande;
+        }
+
+        public boolean isForceStock() {
+            return forceStock;
+        }
+
+        public void setForceStock(boolean forceStock) {
+            this.forceStock = forceStock;
+        }
+
+        public boolean isForcePD() {
+            return forcePD;
+        }
+
+        public void setForcePD(boolean forcePD) {
+            this.forcePD = forcePD;
         }
     }
 }
