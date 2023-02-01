@@ -24,7 +24,7 @@ public class Utilisateur {
     @JoinColumn(name = "IDETAB")
     private Etablissement etablissement;
 
-    @OneToMany(mappedBy = "id")
+    @OneToMany(mappedBy = "utilisateur")
     private List<Commande> commandes;
 
     public String getId() {

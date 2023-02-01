@@ -56,16 +56,16 @@ public class LigneCommande {
         }
     }
 
-    public Presentation getPresentation() {
-        return this.presentation;
-    }
+    // private Presentation getPresentation() {
+    //     return this.presentation;
+    // }
 
-    public Commande getCommande() {
-        return this.commande;
-    }
+    // private Commande getCommande() {
+    //     return this.commande;
+    // }
 
-    public void setCommande(Commande newCommande) {
-        this.commande = newCommande;
-    }
+    // private void setCommande(Commande newCommande) {
+    //     this.commande = newCommande;
+    // }
 
 }

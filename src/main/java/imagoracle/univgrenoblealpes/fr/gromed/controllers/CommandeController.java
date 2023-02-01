@@ -36,7 +36,7 @@ public class CommandeController {
     private PresentationService presentationService;
 
     @GetMapping("/{idCommande}")
-    public Commande getCommande(@PathVariable(value = "idCommande") String id) {
+    public Commande getCommande(@PathVariable(value = "idCommande") int id) {
 
         try {
 
