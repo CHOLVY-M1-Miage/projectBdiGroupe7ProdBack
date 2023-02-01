@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
 public class LigneCommande {
 
     @EmbeddedId
-    private LigneCommandeKey id;
+    private LigneCommandeKey idLigneCommande;
 
     @Column(name = "QUANTITE", nullable = false)
     private int quantite;
@@ -38,12 +38,12 @@ public class LigneCommande {
     }
 
     public LigneCommande(LigneCommandeKey id) {
-        this.id = id;
+        this.idLigneCommande = id;
         this.quantite = 1;
     }
 
-    public LigneCommandeKey getId() {
-        return this.id;
+    public LigneCommandeKey getIdLigneCommande() {
+        return this.idLigneCommande;
     }
 
     public int getQuantite() {
@@ -60,12 +60,16 @@ public class LigneCommande {
     //     return this.presentation;
     // }
 
-    // private Commande getCommande() {
-    //     return this.commande;
-    // }
+    public void setPresentation(Presentation presentation){
+        this.presentation = presentation;
+    }
 
-    // private void setCommande(Commande newCommande) {
-    //     this.commande = newCommande;
-    // }
+    public Commande getCommande() {
+        return this.commande;
+    }
+
+    public void setCommande(Commande newCommande) {
+        this.commande = newCommande;
+    }
 
 }

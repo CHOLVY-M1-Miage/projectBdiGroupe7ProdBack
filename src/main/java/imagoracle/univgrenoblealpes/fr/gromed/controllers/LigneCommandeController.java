@@ -40,24 +40,27 @@ public class LigneCommandeController {
 
                 boolean stockOk = true;
                 List<String> pd = new ArrayList<String>();
-                Optional<LigneCommande> ligneCommandeOpt = ligneCommandeService.getLigneCommande(requestObject.getLigneCommande().getId());
+                Optional<LigneCommande> ligneCommandeOpt = ligneCommandeService.getLigneCommande(requestObject.getLigneCommande().getIdLigneCommande());
                 if (ligneCommandeOpt.isPresent()) {
 
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "LigneCommande existe déjà dans le panier");
                 } else {
 
-                    Optional<Presentation> presentationOpt = presentationService.getPresentation(requestObject.getLigneCommande().getId().getIdPresentation());
-                    Optional<Commande> commandeOpt = commandeService.getCommande(requestObject.getLigneCommande().getId().getIdCommande());
+                    Optional<Presentation> presentationOpt = presentationService.getPresentation(requestObject.getLigneCommande().getIdLigneCommande().getIdPresentation());
+                    Optional<Commande> commandeOpt = commandeService.getCommande(requestObject.getLigneCommande().getIdLigneCommande().getIdCommande());
                     if (presentationOpt.isPresent() && commandeOpt.isPresent()) {
-
+                        Commande panier;
                         Optional<Commande> panierOpt = commandeService
                                 .getPanierOfUtilisateur(commandeOpt.get().getUtilisateur().getId());
                         if (!panierOpt.isPresent()) {
 
                             // créer un nouveau panier pour l'étab. et y ajouter la commande.
-                            Commande panier = commandeService
+                            panier = commandeService
                                     .createPanier(commandeOpt.get().getUtilisateur().getId());
                             commandeService.updateCommande(panier);
+                        }
+                        else{
+                            panier = panierOpt.get();
                         }
 
                         // si stock insuffisant et pas d'ajout forcé au panier
@@ -65,23 +68,25 @@ public class LigneCommandeController {
                                 && presentationOpt.get().getStockLogique() < requestObject.getLigneCommande().getQuantite()) {
 
                             stockOk = false;
+                        } 
+                        // si les conditions de prescription ne sont pas bonnes et pas d'ajout forcé au
+                        // panier
+                    
+                        if (requestObject.isForcePD() == false && presentationOpt.get().getMedicament()
+                            .getConditionsDePrescription().size() > 0 ) {
+
+                        pd = presentationOpt.get().getMedicament().getStringFormattedConditionsPD();
                         } else {
-
-                            // si les conditions de prescription ne sont pas bonnes et pas d'ajout forcé au
-                            // panier
-                        
-                            if (requestObject.isForcePD() == false && presentationOpt.get().getMedicament()
-                                .getConditionsDePrescription().size() > 0) {
-
-                            pd = presentationOpt.get().getMedicament().getStringFormattedConditionsPD();
-                            } else {
-
+                            if(stockOk){
                                 // ajouter la ligne de commande au panier de l'établissement (et màj du stock).
                                 ligneCommandeService.updateStockLogiqueOfPresentation(
-                                        requestObject.getLigneCommande().getId().getIdPresentation(), requestObject.getLigneCommande().getQuantite());
+                                        requestObject.getLigneCommande().getIdLigneCommande().getIdPresentation(), requestObject.getLigneCommande().getQuantite());
+                                requestObject.getLigneCommande().setCommande(panier);
+                                requestObject.getLigneCommande().setPresentation(presentationOpt.get());
                                 ligneCommandeService.saveLigneCommande(requestObject.getLigneCommande());
                             }
                         }
+                        
                         
                     }
 
@@ -92,7 +97,7 @@ public class LigneCommandeController {
                     // si oui, on refait appel à cette méthode de mapping avec forceStock et/ou
                     // forcePD à true
                     // si non, tout s'arrête là.
-                    return new AddLigneCommandeResponse(requestObject.getLigneCommande().getId(), stockOk, pd);
+                    return new AddLigneCommandeResponse(requestObject.getLigneCommande().getIdLigneCommande(), stockOk, pd);
                 }
         } catch (Exception e) {
             e.printStackTrace();

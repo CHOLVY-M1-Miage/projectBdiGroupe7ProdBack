@@ -104,7 +104,7 @@ public class CommandeController {
                     List<LigneCommande> referencesOutOfStock = new ArrayList<LigneCommande>();
                     for (LigneCommande reference : lignesCommande) {
 
-                        Optional<Presentation> presentationOpt = presentationService.getPresentation(reference.getId().getIdPresentation());
+                        Optional<Presentation> presentationOpt = presentationService.getPresentation(reference.getIdLigneCommande().getIdPresentation());
                         if(presentationOpt.isPresent()) {
                             if (presentationOpt.get().getStockLogique() < reference.getQuantite()) {
 
@@ -130,7 +130,7 @@ public class CommandeController {
                         Commande newPanier = commandeService.createPanier(commande.getUtilisateur().getId());
                         for (LigneCommande ligneCommande : referencesOutOfStock) {
                             
-                            Optional<Commande> commandeOpt = commandeService.getCommande(ligneCommande.getId().getIdCommande());
+                            Optional<Commande> commandeOpt = commandeService.getCommande(ligneCommande.getIdLigneCommande().getIdCommande());
                             if (commandeOpt.isPresent()) {
                                 commandeService.updateCommande(newPanier);
                             }
