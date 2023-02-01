@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
@@ -22,8 +23,9 @@ public class Commande {
 
     @Id
     @Column(name = "ID")
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    @SequenceGenerator(sequenceName = "COMMANDE_SEQ", name = "cmdSeq", allocationSize = 1, initialValue = 2)     
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cmdSeq")
+    private int idCommande;
 
     @Column(name = "DATECOMMANDE")
     private LocalDateTime dateCommande;
@@ -55,8 +57,8 @@ public class Commande {
         this.estCommandeType = false;
     }
 
-    public int getId() {
-        return this.id;
+    public int getIdCommande() {
+        return this.idCommande;
     }
 
     public LocalDateTime getDateCommande() {

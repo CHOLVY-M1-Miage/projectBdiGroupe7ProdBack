@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,8 +24,10 @@ import imagoracle.univgrenoblealpes.fr.gromed.entities.LigneCommande;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Presentation;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Utilisateur;
 import imagoracle.univgrenoblealpes.fr.gromed.services.CommandeService;
+import imagoracle.univgrenoblealpes.fr.gromed.services.LigneCommandeService;
 // import imagoracle.univgrenoblealpes.fr.gromed.services.LigneCommandeService;
 import imagoracle.univgrenoblealpes.fr.gromed.services.PresentationService;
+import imagoracle.univgrenoblealpes.fr.gromed.services.UtilisateurService;
 
 @RestController
 @CrossOrigin
@@ -31,11 +37,14 @@ public class CommandeController {
     @Autowired
     private CommandeService commandeService;
 
-    // @Autowired
-    // private LigneCommandeService ligneCommandeService;
+    @Autowired
+    private LigneCommandeService ligneCommandeService;
 
     @Autowired
     private PresentationService presentationService;
+
+    @Autowired
+    private UtilisateurService utilisateurService;
 
     @GetMapping("/{idCommande}")
     public Commande getCommande(@PathVariable(value = "idCommande") int id) {
@@ -94,53 +103,71 @@ public class CommandeController {
     // }
 
     @PutMapping("/validation")
-    public ValiderPanierResponse validerPanier(@RequestBody ValiderPanierRequestObject requestObject) {
+    public ValiderPanierResponse validerPanier(@RequestBody ValiderPanierRequestObject requestObject, @RequestHeader("Authorization") String jwt) {
 
         try {
 
-                boolean stockOk = true;
-                List<LigneCommande> lignesCommande = requestObject.getCommande().getLignesCommande();
-                if (requestObject.getCommande().getEstPanier() && lignesCommande.size() > 0) {
+            FirebaseToken token = FirebaseAuth.getInstance().verifyIdToken(jwt);
+            Optional<Utilisateur> utilisateur = utilisateurService.getUtilisateur(token.getUid());
 
-                    List<LigneCommande> referencesOutOfStock = new ArrayList<LigneCommande>();
-                    for (LigneCommande reference : lignesCommande) {
+            boolean stockOk = true;
+            List<LigneCommande> lignesCommande = ligneCommandeService.getLignesCommandeOfCommande(requestObject.getCommande().getIdCommande());
+            if (requestObject.getCommande().getEstPanier() && lignesCommande.size() > 0) {
 
-                        Optional<Presentation> presentationOpt = presentationService.getPresentation(reference.getIdLigneCommande().getIdPresentation());
-                        if(presentationOpt.isPresent()) {
-                            if (presentationOpt.get().getStockLogique() < reference.getQuantite()) {
+                List<LigneCommande> referencesOutOfStock = new ArrayList<LigneCommande>();
+                List<LigneCommande> referencesInStock = new ArrayList<LigneCommande>();
+                for (LigneCommande reference : lignesCommande) {
 
-                                referencesOutOfStock.add(reference);
-                            }
+                    Optional<Presentation> presentationOpt = presentationService.getPresentation(reference.getIdLigneCommande().getIdPresentation());
+                    if(presentationOpt.isPresent()) {
+                        if (presentationOpt.get().getStockLogique() < reference.getQuantite()) {
+
+                            referencesOutOfStock.add(reference);
                         }
-                    }
-                    // si stock insuffisant et pas de validation forcée du panier
-                    if (requestObject.isRemoveOutOfStock() == false && referencesOutOfStock.size() > 0) {
-
-                        stockOk = false;
-                    } else {
-
-                        // transformer le panier en commande validée (càd estPanier = false) avec les
-                        // références EN STOCK
-                        requestObject.getCommande().setEstPanier(false);
-                        // TODO reste à enlever du panier les réfences out of stock (laisser seulement
-                        // celles EN STOCK)
-                        commandeService.updateCommande(requestObject.getCommande());
-
-                        // créer un nouveau panier pour l'étab. et y ajouter les références out of
-                        // stock.
-                        Commande newPanier = commandeService.createPanier(requestObject.getCommande().getUtilisateur().getId());
-                        for (LigneCommande ligneCommande : referencesOutOfStock) {
-                            
-                            Optional<Commande> commandeOpt = commandeService.getCommande(ligneCommande.getIdLigneCommande().getIdCommande());
-                            if (commandeOpt.isPresent()) {
-                                commandeService.updateCommande(newPanier);
-                            }
+                        else {
+                            referencesInStock.add(reference);
                         }
                     }
                 }
-                return new ValiderPanierResponse(requestObject.getCommande(), stockOk);
+                // si stock insuffisant et pas de validation forcée du panier
+                if (requestObject.isRemoveOutOfStock() == false && referencesOutOfStock.size() > 0) {
+
+                    stockOk = false;
+
+                } else {
+                    // Validation du panier en ne prenant en compte que les références avec stock logique suffisant
+
+                    // Créer un nouveau panier pour l'utilisateur.
+                    // Mettre les références out of stock dans ce nouveau panier créé
+                    // càd setIdCommande de ces références à celui du panier créé.
+                    Commande newPanier = commandeService.createPanier(token.getUid());
+
+                    for (LigneCommande referenceOutOfStock : referencesOutOfStock) {
+
+                        referenceOutOfStock.getIdLigneCommande().setIdCommande(newPanier.getIdCommande());
+                        ligneCommandeService.saveLigneCommande(referenceOutOfStock);
+                    }
+                    
+                    // Faire de l'ancien panier une commance validée (avec les références en stock)
+                    // càd passer son attribut estPanier à false.
+                    // Mais également, mettre à jour le stock logique dans les présentations de chacune de ces références.
+                    requestObject.getCommande().setEstPanier(false);
+                    if (utilisateur.isPresent()) {
+                        requestObject.getCommande().setUtilisateur(utilisateur.get());
+                    }
+                    commandeService.updateCommande(requestObject.getCommande());
+
+                    for (LigneCommande referenceInStock : referencesInStock) {
+                        ligneCommandeService.updateStockLogiqueOfPresentation(
+                        referenceInStock.getIdLigneCommande().getIdPresentation(), referenceInStock.getQuantite());
+                    }
+                }
+            }
+            return new ValiderPanierResponse(requestObject.getCommande(), stockOk);
+
         } catch (Exception e) {
 
+            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized", e);
         }
     }
