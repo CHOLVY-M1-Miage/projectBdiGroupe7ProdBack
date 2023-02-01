@@ -92,14 +92,13 @@ public class CommandeController {
     // }
 
     @PutMapping("/validation")
-    public ValiderPanierResponse validerPanier(@RequestBody Commande commande,
-            /* default = false */ boolean removeOutOfStock) {
+    public ValiderPanierResponse validerPanier(@RequestBody ValiderPanierRequestObject requestObject) {
 
         try {
 
                 boolean stockOk = true;
-                List<LigneCommande> lignesCommande = commande.getLignesCommande();
-                if (commande.getEstPanier() && lignesCommande.size() > 0) {
+                List<LigneCommande> lignesCommande = requestObject.getCommande().getLignesCommande();
+                if (requestObject.getCommande().getEstPanier() && lignesCommande.size() > 0) {
 
                     List<LigneCommande> referencesOutOfStock = new ArrayList<LigneCommande>();
                     for (LigneCommande reference : lignesCommande) {
@@ -113,21 +112,21 @@ public class CommandeController {
                         }
                     }
                     // si stock insuffisant et pas de validation forcée du panier
-                    if (removeOutOfStock == false && referencesOutOfStock.size() > 0) {
+                    if (requestObject.isRemoveOutOfStock() == false && referencesOutOfStock.size() > 0) {
 
                         stockOk = false;
                     } else {
 
                         // transformer le panier en commande validée (càd estPanier = false) avec les
                         // références EN STOCK
-                        commande.setEstPanier(false);
+                        requestObject.getCommande().setEstPanier(false);
                         // TODO reste à enlever du panier les réfences out of stock (laisser seulement
                         // celles EN STOCK)
-                        commandeService.updateCommande(commande);
+                        commandeService.updateCommande(requestObject.getCommande());
 
                         // créer un nouveau panier pour l'étab. et y ajouter les références out of
                         // stock.
-                        Commande newPanier = commandeService.createPanier(commande.getUtilisateur().getId());
+                        Commande newPanier = commandeService.createPanier(requestObject.getCommande().getUtilisateur().getId());
                         for (LigneCommande ligneCommande : referencesOutOfStock) {
                             
                             Optional<Commande> commandeOpt = commandeService.getCommande(ligneCommande.getIdLigneCommande().getIdCommande());
@@ -137,7 +136,7 @@ public class CommandeController {
                         }
                     }
                 }
-                return new ValiderPanierResponse(commande, stockOk);
+                return new ValiderPanierResponse(requestObject.getCommande(), stockOk);
         } catch (Exception e) {
 
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized", e);
@@ -151,6 +150,22 @@ public class CommandeController {
 
         public ValiderPanierResponse(Commande panierValide, boolean stockOk) {
             this.panierValide = panierValide;
+            this.stockOk = stockOk;
+        }
+
+        public Commande getPanierValide() {
+            return panierValide;
+        }
+
+        public void setPanierValide(Commande panierValide) {
+            this.panierValide = panierValide;
+        }
+
+        public boolean isStockOk() {
+            return stockOk;
+        }
+
+        public void setStockOk(boolean stockOk) {
             this.stockOk = stockOk;
         }
     }
