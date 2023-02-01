@@ -95,7 +95,7 @@ public class LigneCommandeController {
                     return new AddLigneCommandeResponse(requestObject.getLigneCommande().getId(), stockOk, pd);
                 }
         } catch (Exception e) {
-
+            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized", e);
         }
     }
@@ -106,6 +106,18 @@ public class LigneCommandeController {
         boolean stockOk;
         List<String> conditionsPD;
 
+        public LigneCommandeKey getIdLigneCommande() {
+            return idLigneCommande;
+        }
+
+        public boolean isStockOk() {
+            return stockOk;
+        }
+
+        public List<String> getConditionsPD() {
+            return conditionsPD;
+        }
+
         public AddLigneCommandeResponse(LigneCommandeKey idLigneCommande, boolean stockOk, List<String> conditionsPD) {
             this.idLigneCommande = idLigneCommande;
             this.stockOk = stockOk;
@@ -113,44 +125,4 @@ public class LigneCommandeController {
         }
     }
 
-    public class AddLigneCommandeRequestObject {
-
-        LigneCommande ligneCommande;
-        boolean forceStock; /* default = false */
-        boolean forcePD; /* default = false */
-
-        public AddLigneCommandeRequestObject() {
-
-        }
-
-        public AddLigneCommandeRequestObject(LigneCommande ligneCommande, boolean forceStock, boolean forcePD) {
-            this.ligneCommande = ligneCommande;
-            this.forceStock = forceStock;
-            this.forcePD = forcePD;
-        }
-
-        public LigneCommande getLigneCommande() {
-            return ligneCommande;
-        }
-
-        public void setLigneCommande(LigneCommande ligneCommande) {
-            this.ligneCommande = ligneCommande;
-        }
-
-        public boolean isForceStock() {
-            return forceStock;
-        }
-
-        public void setForceStock(boolean forceStock) {
-            this.forceStock = forceStock;
-        }
-
-        public boolean isForcePD() {
-            return forcePD;
-        }
-
-        public void setForcePD(boolean forcePD) {
-            this.forcePD = forcePD;
-        }
-    }
 }

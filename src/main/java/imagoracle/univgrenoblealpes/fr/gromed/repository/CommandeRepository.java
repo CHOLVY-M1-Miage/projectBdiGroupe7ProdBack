@@ -15,6 +15,6 @@ public interface CommandeRepository extends JpaRepository<Commande, Integer>{
     @Query(value="select c from commande c where c.idetablissement = ?1 and estpanier = 1", nativeQuery = true)
     Optional<Commande> findPanierByIdEtab(long idEtab);
 
-    @Query(value="select c from commande c where c.idutilisateur = ?1 and estpanier = 1", nativeQuery = true)
+    @Query(value="select * from commande c where c.idutilisateur = ?1 and estpanier = 1", nativeQuery = true)
     Optional<Commande> findPanierByIdUtilisateur(String idUtilisateur);
 }
