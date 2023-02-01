@@ -67,6 +67,7 @@ public class Medicament {
     private List<InformationSecu> informations;
 
     @OneToMany
+    @Column(name = "CONDITIONDEPRESCRIPTION")
     private List<ConditionDePrescription> conditionsDePrescription;
 
     public int getCodeCIS() {

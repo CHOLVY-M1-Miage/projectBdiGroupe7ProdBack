@@ -57,7 +57,6 @@ public class LigneCommandeController {
                             // créer un nouveau panier pour l'étab. et y ajouter la commande.
                             Commande panier = commandeService
                                     .createPanier(commandeOpt.get().getUtilisateur().getId());
-                            // TODO le cas d'un "panier" = null n'est pas géré.
                             commandeService.updateCommande(panier);
                         }
 
@@ -117,8 +116,8 @@ public class LigneCommandeController {
     public class AddLigneCommandeRequestObject {
 
         LigneCommande ligneCommande;
-        boolean forceStock;
-        boolean forcePD;
+        boolean forceStock; /* default = false */
+        boolean forcePD; /* default = false */
 
         public AddLigneCommandeRequestObject() {
 
