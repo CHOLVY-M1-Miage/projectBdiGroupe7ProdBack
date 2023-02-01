@@ -66,7 +66,7 @@ public class Medicament {
     @OneToMany
     private List<InformationSecu> informations;
 
-    @OneToMany
+    @OneToMany(mappedBy = "medicament")
     @Column(name = "CONDITIONDEPRESCRIPTION")
     private List<ConditionDePrescription> conditionsDePrescription;
 
