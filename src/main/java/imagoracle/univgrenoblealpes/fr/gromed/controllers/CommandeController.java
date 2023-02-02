@@ -23,9 +23,9 @@ import imagoracle.univgrenoblealpes.fr.gromed.entities.Commande;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.LigneCommande;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Presentation;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Utilisateur;
+import imagoracle.univgrenoblealpes.fr.gromed.keys.LigneCommandeKey;
 import imagoracle.univgrenoblealpes.fr.gromed.services.CommandeService;
 import imagoracle.univgrenoblealpes.fr.gromed.services.LigneCommandeService;
-// import imagoracle.univgrenoblealpes.fr.gromed.services.LigneCommandeService;
 import imagoracle.univgrenoblealpes.fr.gromed.services.PresentationService;
 import imagoracle.univgrenoblealpes.fr.gromed.services.UtilisateurService;
 
@@ -73,35 +73,6 @@ public class CommandeController {
         }
     }
 
-    // @GetMapping("/{idCommande}/")
-    // public List<LigneCommande> getLignesCommandeOfCommande(@PathVariable(value = "idCommande") String id) {
-
-    //     try {
-
-    //         Optional<Commande> commande = commandeService.getCommande(id);
-    //         if (commande.isPresent()) {
-
-    //             List<String> utilisateursIds = new ArrayList<String>();
-    //             for (Utilisateur utilOfEtabOfCommande : commande.get().getUtilisateur().getEtablissement()
-    //                     .getUtilisateurs()) {
-
-    //                 utilisateursIds.add(utilOfEtabOfCommande.getId());
-    //             }
-
-    //                 List<LigneCommande> lignesCommande = ligneCommandeService.getLignesCommandeOfCommande(id);
-    //                 return lignesCommande;
-
-    //         } else {
-
-    //             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande non trouvée");
-    //         }
-
-    //     } catch (Exception e) {
-
-    //         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentification non autorisée", e);
-    //     }
-    // }
-
     @PutMapping("/validation")
     public ValiderPanierResponse validerPanier(@RequestBody ValiderPanierRequestObject requestObject, @RequestHeader("Authorization") String jwt) {
 
@@ -144,8 +115,20 @@ public class CommandeController {
 
                     for (LigneCommande referenceOutOfStock : referencesOutOfStock) {
 
-                        referenceOutOfStock.getIdLigneCommande().setIdCommande(newPanier.getIdCommande());
-                        ligneCommandeService.saveLigneCommande(referenceOutOfStock);
+                        // referenceOutOfStock est immutable parcequ'on ne peut pas changer la commande d'une ligneCommande :
+                        // elle fait partie de sa clé => création d'une nouvelle ligneCommande et supprimer l'ancienne.
+
+                        LigneCommandeKey newLigneCommandeKey = new LigneCommandeKey();
+                        newLigneCommandeKey.setIdCommande(newPanier.getIdCommande());
+                        newLigneCommandeKey.setIdPresentation(referenceOutOfStock.getIdLigneCommande().getIdPresentation());
+
+                        LigneCommande newLigneCommande = new LigneCommande(newLigneCommandeKey);
+                        newLigneCommande.setCommande(newPanier);
+                        newLigneCommande.setPresentation(referenceOutOfStock.getPresentation());
+                        newLigneCommande.setQuantite(referenceOutOfStock.getQuantite());
+
+                        ligneCommandeService.saveLigneCommande(newLigneCommande);
+                        ligneCommandeService.deleteLigneCommande(referenceOutOfStock);
                     }
                     
                     // Faire de l'ancien panier une commance validée (avec les références en stock)
@@ -159,7 +142,7 @@ public class CommandeController {
 
                     for (LigneCommande referenceInStock : referencesInStock) {
                         ligneCommandeService.updateStockLogiqueOfPresentation(
-                        referenceInStock.getIdLigneCommande().getIdPresentation(), referenceInStock.getQuantite());
+                            referenceInStock.getIdLigneCommande().getIdPresentation(), referenceInStock.getQuantite());
                     }
                 }
             }
@@ -167,7 +150,6 @@ public class CommandeController {
 
         } catch (Exception e) {
 
-            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized", e);
         }
     }

@@ -82,8 +82,6 @@ public class LigneCommandeController {
                             if(stockOk){
                                 // ajouter la ligne de commande au panier de l'utilisateur (et pas de màj du stock logique, 
                                 // ceci sera fait lors de la validation).
-                                // ligneCommandeService.updateStockLogiqueOfPresentation(
-                                //         requestObject.getLigneCommande().getIdLigneCommande().getIdPresentation(), requestObject.getLigneCommande().getQuantite());
                                 requestObject.getLigneCommande().setCommande(panier);
                                 requestObject.getLigneCommande().setPresentation(presentationOpt.get());
                                 ligneCommandeService.saveLigneCommande(requestObject.getLigneCommande());

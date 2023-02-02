@@ -26,20 +26,12 @@ public class PresentationController {
 
     @GetMapping("/{idPresentation}")
     public Presentation getPresentation(@PathVariable(value = "idPresentation") int id) {
-        // try {
         Optional<Presentation> presentation = presentationService.getPresentation(id);
         if (presentation.isPresent()) {
             return presentation.get();
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Référence non trouvée");
         }
-        /*
-         * } catch (Exception e) {
-         * System.err.println(e.getMessage());
-         * throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-         * "Authentification non autorisée", e);
-         * }//
-         */
     }
 
     @GetMapping("/medicament/{medicamentCodeCIS}")

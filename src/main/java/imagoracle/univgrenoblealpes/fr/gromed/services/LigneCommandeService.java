@@ -45,4 +45,8 @@ public class LigneCommandeService {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Référence non trouvée");
             }
     }
+
+    public void deleteLigneCommande(LigneCommande ligneCommande) {
+        ligneCommandeRepository.delete(ligneCommande);
+    }
 }

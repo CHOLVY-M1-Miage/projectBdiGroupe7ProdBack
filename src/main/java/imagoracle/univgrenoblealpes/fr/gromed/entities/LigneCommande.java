@@ -56,9 +56,9 @@ public class LigneCommande {
         }
     }
 
-    // private Presentation getPresentation() {
-    //     return this.presentation;
-    // }
+    public Presentation getPresentation() {
+        return this.presentation;
+    }
 
     public void setPresentation(Presentation presentation){
         this.presentation = presentation;

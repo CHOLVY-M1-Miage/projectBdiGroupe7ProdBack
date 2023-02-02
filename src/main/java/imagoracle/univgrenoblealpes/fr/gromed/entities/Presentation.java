@@ -114,7 +114,7 @@ public class Presentation {
     //     if (newStockPhysique > 0) {
     //         this.stockPhysique = newStockPhysique;
     //     }
-    //     // TODO nous ne gérons pas la cas d'un stockPhysique <= O pour l'instant.
+    //     // nous ne gérons pas la cas d'un stockPhysique <= O pour l'instant.
     // }
 
     public int getStockLogique() {
