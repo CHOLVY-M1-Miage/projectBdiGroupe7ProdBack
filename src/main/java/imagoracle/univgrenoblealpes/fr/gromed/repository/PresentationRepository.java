@@ -21,7 +21,8 @@ public interface PresentationRepository extends JpaRepository<Presentation, Inte
         "DENOMINATIONMEDICAMENT LIKE %:medicament% AND " +
         "DENOMATIONSUBSTANCE LIKE %:molecule% AND " +
         "TITULAIRE LIKE %:fournisseur% AND " +
-        "ESTGENERIQUE = :estGenerique",
+        "ESTGENERIQUE = :estGenerique " +
+        "GROUP BY  p.ID, DENOMINATIONMEDICAMENT, LIBELLEPRESTATION, DENOMATIONSUBSTANCE, TITULAIRE, PRIX",
         nativeQuery = true
         )
     List<Presentation> searchWithGenerique(
@@ -38,7 +39,8 @@ public interface PresentationRepository extends JpaRepository<Presentation, Inte
     "DENOMATIONSUBSTANCE LIKE %:molecule% AND " +
     "TITULAIRE LIKE %:fournisseur% AND " +
     "ESTGENERIQUE = :estGenerique AND " +
-    "p.AGREMENTCOLLECTIVITES = :estCollectivite",
+    "p.AGREMENTCOLLECTIVITES = :estCollectivite " +
+    "GROUP BY  p.ID, DENOMINATIONMEDICAMENT, LIBELLEPRESTATION, DENOMATIONSUBSTANCE, TITULAIRE, PRIX",
         nativeQuery = true
         )
     List<Presentation> searchWithBoth(
@@ -55,7 +57,8 @@ public interface PresentationRepository extends JpaRepository<Presentation, Inte
     "DENOMINATIONMEDICAMENT LIKE %:medicament% AND " +
     "DENOMATIONSUBSTANCE LIKE %:molecule% AND " +
     "TITULAIRE LIKE %:fournisseur% AND " +
-    "p.AGREMENTCOLLECTIVITES = :estCollectivite",
+    "p.AGREMENTCOLLECTIVITES = :estCollectivite " +
+    "GROUP BY  p.ID, DENOMINATIONMEDICAMENT, LIBELLEPRESTATION, DENOMATIONSUBSTANCE, TITULAIRE, PRIX",
         nativeQuery = true
         )
     List<Presentation> searchWithCollectivite(
@@ -70,7 +73,8 @@ public interface PresentationRepository extends JpaRepository<Presentation, Inte
     "WHERE ESTAUTORISE = 1 AND " +
     "DENOMINATIONMEDICAMENT LIKE %:medicament% AND " +
     "DENOMATIONSUBSTANCE LIKE %:molecule% AND " +
-    "TITULAIRE LIKE %:fournisseur%",
+    "TITULAIRE LIKE %:fournisseur% " +
+    "GROUP BY  p.ID, DENOMINATIONMEDICAMENT, LIBELLEPRESTATION, DENOMATIONSUBSTANCE, TITULAIRE, PRIX",
         nativeQuery = true
         )
     List<Presentation> search(
