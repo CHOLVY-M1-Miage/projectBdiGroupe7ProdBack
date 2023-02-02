@@ -1,5 +1,7 @@
 package imagoracle.univgrenoblealpes.fr.gromed.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -12,13 +14,14 @@ import jakarta.persistence.Table;
 public class VoieAdministration {
 
     @Id
-    @Column(name = "ID")
+    @Column(name = "")
     private int id;
 
     @Column(name = "MOYENDADMINISTRATION")
     private String moyenAdministration;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "codeCIS")
     private Medicament medicament;
 

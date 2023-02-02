@@ -2,6 +2,8 @@ package imagoracle.univgrenoblealpes.fr.gromed.entities;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import imagoracle.univgrenoblealpes.fr.gromed.keys.AvisSMRKey;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -33,6 +35,7 @@ public class AvisSMR {
     @ManyToOne
     @MapsId("codeCIS_Medicament")
     @JoinColumn(name = "codeCISmedicament")
+    @JsonIgnore
     private Medicament medicament;
 
     @ManyToOne

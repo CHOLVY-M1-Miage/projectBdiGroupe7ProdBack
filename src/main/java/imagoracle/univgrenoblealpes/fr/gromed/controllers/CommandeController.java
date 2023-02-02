@@ -54,7 +54,7 @@ public class CommandeController {
             Optional<Commande> commande = commandeService.getCommande(id);
             if (commande.isPresent()) {
 
-                List<String> utilisateursIds = new ArrayList<String>();
+                List<String> utilisateursIds = new ArrayList<>();
                 for (Utilisateur utilOfEtabOfCommande : commande.get().getUtilisateur().getEtablissement()
                         .getUtilisateurs()) {
 
@@ -85,8 +85,8 @@ public class CommandeController {
             List<LigneCommande> lignesCommande = ligneCommandeService.getLignesCommandeOfCommande(requestObject.getCommande().getIdCommande());
             if (requestObject.getCommande().getEstPanier() && lignesCommande.size() > 0) {
 
-                List<LigneCommande> referencesOutOfStock = new ArrayList<LigneCommande>();
-                List<LigneCommande> referencesInStock = new ArrayList<LigneCommande>();
+                List<LigneCommande> referencesOutOfStock = new ArrayList<>();
+                List<LigneCommande> referencesInStock = new ArrayList<>();
                 for (LigneCommande reference : lignesCommande) {
 
                     Optional<Presentation> presentationOpt = presentationService.getPresentation(reference.getIdLigneCommande().getIdPresentation());

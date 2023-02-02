@@ -1,5 +1,7 @@
 package imagoracle.univgrenoblealpes.fr.gromed.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -29,6 +31,7 @@ public class Generique {
 
     @ManyToOne
     @JoinColumn(name = "codeCIS")
+    @JsonIgnore
     private Medicament medicament;
 
     public int getId() {

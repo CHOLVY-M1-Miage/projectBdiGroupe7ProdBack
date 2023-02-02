@@ -2,6 +2,8 @@ package imagoracle.univgrenoblealpes.fr.gromed.entities;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -27,6 +29,7 @@ public class InformationSecu {
     private String information;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "codeCIS")
     private Medicament medicament;
 

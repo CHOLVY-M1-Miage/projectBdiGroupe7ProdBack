@@ -2,6 +2,8 @@ package imagoracle.univgrenoblealpes.fr.gromed.entities;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -19,7 +21,8 @@ public class PageCT {
     @Column(name = "LIENPAGECT")
     private String lienPageCT;
 
-    @OneToMany
+    @OneToMany(mappedBy = "pageCT")
+    @JsonIgnore
     private List<AvisSMR> avisSMRs;
 
     public long getCodeHAS() {

@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -48,22 +50,23 @@ public class Medicament {
     @Column(name = "ESTENSURVEILLANCERENFORCEE")
     private boolean estEnSurveillanceRenforcee;
 
-    @OneToMany
+    @OneToMany(mappedBy = "medicament")
     private List<AvisSMR> avisSMRs;
 
-    @OneToMany
+    @OneToMany(mappedBy = "medicament")
     private List<Presentation> presentations;
 
-    @OneToMany
+    @OneToMany(mappedBy = "medicament")
     private List<CompositionMedicament> substances;
 
-    @OneToMany
+    @OneToMany(mappedBy = "medicament")
+    @JsonIgnore
     private List<VoieAdministration> voiesAdministration;
 
-    @OneToMany
+    @OneToMany(mappedBy = "medicament")
     private List<Generique> generiques;
 
-    @OneToMany
+    @OneToMany(mappedBy="medicament")
     private List<InformationSecu> informations;
 
     @OneToMany(mappedBy = "medicament")

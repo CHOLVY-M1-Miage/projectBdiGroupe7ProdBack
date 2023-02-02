@@ -1,5 +1,6 @@
 package imagoracle.univgrenoblealpes.fr.gromed.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import imagoracle.univgrenoblealpes.fr.gromed.entities.Medicament;
 import imagoracle.univgrenoblealpes.fr.gromed.entities.Presentation;
+import imagoracle.univgrenoblealpes.fr.gromed.services.MedicamentService;
 import imagoracle.univgrenoblealpes.fr.gromed.services.PresentationService;
 
 @RestController
@@ -23,6 +26,9 @@ public class PresentationController {
 
     @Autowired
     private PresentationService presentationService;
+
+    @Autowired
+    private MedicamentService medicamentService;
 
     @GetMapping("/{idPresentation}")
     public Presentation getPresentation(@PathVariable(value = "idPresentation") int id) {
@@ -45,7 +51,7 @@ public class PresentationController {
     }
 
     @GetMapping("/article")
-    public List<Presentation> search(
+    public List<RetourArticle> search(
         @RequestParam("medicament") Optional<String> medicament,
         @RequestParam("molecule") Optional<String> molecule,
         @RequestParam("fournisseur") Optional<String> fournisseur,
@@ -58,7 +64,49 @@ public class PresentationController {
             fournisseur.isPresent()?fournisseur.get():null,
             estGenerique.isPresent()?estGenerique.get():null,
             estCollectivite.isPresent()?estCollectivite.get():null);
-        return lesPrez;
+        
+        List<RetourArticle> retour = new ArrayList<>();
+
+        RetourArticle ret;
+        for(Presentation prez : lesPrez){
+            ret = new RetourArticle();
+            ret.setLaPrez(prez);
+            Optional<Medicament> medoc = medicamentService.getMedicament(prez.getMedicament().getCodeCIS());
+            if(medoc.isPresent()){
+                ret.setLeMedoc(medoc.get().getDenominationMedicament());
+            }
+            retour.add(ret);
+
+        }
+        System.out.println(retour.size());
+        return retour;
     }
 
+
+    public class RetourArticle{
+        Presentation laPrez;
+        String leMedoc;
+
+        public Presentation getLaPrez() {
+            return laPrez;
+        }
+
+        public void setLaPrez(Presentation laPrez) {
+            this.laPrez = laPrez;
+        }
+
+        public String getLeMedoc() {
+            return leMedoc;
+        }
+
+        public void setLeMedoc(String leMedoc) {
+            this.leMedoc = leMedoc;
+        }
+
+        public RetourArticle(){
+
+        }
+
+        
+    }
 }
